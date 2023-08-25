@@ -42,8 +42,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         caloriesLabel.text = "0kcal"
         distanceLabel.text = "0km"
         walkCountLabel.text = "0Walk"
-        coreMotion.text = "0Walk"
-     
+        coreMotion.text = "0Walk"     
         imageView.image = UIImage(named: "JJANg")
         checkSteps()
         getCalories()
@@ -55,7 +54,6 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                                     selector: #selector(checkSteps),
                                     userInfo: nil,
                                     repeats: true)
-        // Do any additional setup after loading the view.
     }
     
     @objc private func checkSteps() {
@@ -85,10 +83,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         }
 
     }
-
-    
-    
-    
+    //권한
     func requestHealthAutoirzation() {
         self.healthStore.requestAuthorization(toShare: share, read: readData ) { (success, error) in
             if error != nil {
@@ -129,7 +124,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                 var counts = sum.doubleValue(for: HKUnit.count())
                 print("걸음\(counts)")
                 self.walkCounts = counts
-                self.walkCountLabel.text = String(counts) + "걸음"
+                self.walkCountLabel.text = String(format:"%.0f",counts) + "걸음"
             }
         }
         healthStore.execute(query)
@@ -300,7 +295,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
     
     @IBAction func touchUpVideoButton(_ sender: UIButton) {
         // VideoViewController를 modal로 present 합니다.
-     
+        self.player.pause()
        
         imageView.image = UIImage(named: "Key")
     }
@@ -308,10 +303,9 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
     
     
     @IBAction func handleVolumeSlider(_ sender: Any) {
-        imageView.alpha = CGFloat(volumeSlider.value)
+    imageView.alpha = CGFloat(volumeSlider.value)
             MPVolumeView.setVolume(volumeSlider.value)
         }
-    
     
 }
 

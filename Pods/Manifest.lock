@@ -1,0 +1,24 @@
+PODS:
+  - Alamofire (5.7.1)
+  - Kingfisher (7.9.0)
+  - YouTubePlayer (0.7.2)
+
+DEPENDENCIES:
+  - Alamofire
+  - Kingfisher
+  - YouTubePlayer
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - Kingfisher
+    - YouTubePlayer
+
+SPEC CHECKSUMS:
+  Alamofire: 0123a34370cb170936ae79a8df46cc62b2edeb88
+  Kingfisher: 59f908b6d2f403b0a3e539debb0eec05cb27002c
+  YouTubePlayer: 2b5f2830d8f9b2cde942083211291e382c9e6bd5
+
+PODFILE CHECKSUM: 9e4b5ae62f0ccf107cbc371c087c8f0a30fc2d6d
+
+COCOAPODS: 1.10.0

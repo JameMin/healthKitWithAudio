@@ -1,0 +1,6 @@
+framework module Pods_healthKitExamples_healthKitExamplesUITests {
+  umbrella header "Pods-healthKitExamples-healthKitExamplesUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
