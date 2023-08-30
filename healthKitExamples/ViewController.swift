@@ -283,7 +283,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                         fatalError("*** Energy Burned Type Not Available ***")
                     }
                         
-                    if self.eachDistance != 0.0 {
+                
                         let samples: [HKSample] = currentWorkout.intervals.map { interval in
                             var calorieQuantity = HKQuantity(unit: .kilocalorie(),
                                                              doubleValue: interval.totalEnergyBurned)
@@ -298,11 +298,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                                                               start: interval.start,
                                                               end: interval.end)
                         }
-                    }else {
-                        print("너 운동안했지")
-                    }
-                
-                
+                   
                     
                    
                 }
