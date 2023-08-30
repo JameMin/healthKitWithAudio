@@ -13,6 +13,10 @@ import MediaPlayer
 
 class ViewController: UIViewController ,AVAudioPlayerDelegate{
     
+    @IBOutlet weak var mainView: UIView!
+    @IBOutlet weak var currentPaceLabel: UILabel!
+    @IBOutlet weak var activePaces: UILabel!
+    @IBOutlet weak var activePaceLabel: UILabel!
     @IBOutlet weak var volumeSlider: UISlider!
     @IBOutlet weak var coreMotion: UILabel!
     @IBOutlet weak var VideoBtn: UIButton!
@@ -25,35 +29,71 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
     @IBOutlet weak var walkCountLabel: UILabel!
     @IBOutlet weak var calorys: UILabel!
     @IBOutlet weak var distances: UILabel!
+   
     @IBOutlet weak var walkCount: UILabel!
     var player = AVAudioPlayer()
     var session = AVAudioSession()
+    var sessions = WorkoutSession()
     let healthStore = HKHealthStore()
     var walkCounts: Double = 0.0
+    var todayStartDates = Date()
+    var startDates = Date()
     static let shared = ViewController()
     private var pedoMeter = CMPedometer()
+    private var workouts: [HKWorkout]?
+    var walkControl: Double = 0.0
+    var dateString: String = ""
+    var walkData: Double = 0.0
+    lazy var cals: Double = 0.0
+    var eachDistance: Double = 0.0
+    var eachDistances: Double = 0.0
+    var intervals: [PrancerciseWorkoutInterval] = []
+    var calories: Double = 0.0
     let readData = Set([HKObjectType.quantityType(forIdentifier: .heartRate)!, HKObjectType.quantityType(forIdentifier: .stepCount)!, HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)!, HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!])
     let share = Set([HKObjectType.quantityType(forIdentifier: .heartRate)!, HKObjectType.quantityType(forIdentifier: .stepCount)!, HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)!, HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!])
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        requestHealthAutoirzation()
-        caloriesLabel.text = "0kcal"
-        distanceLabel.text = "0km"
-        walkCountLabel.text = "0Walk"
-        coreMotion.text = "0Walk"     
+        if #available(iOS 16.0, *) {
+            requestHealthAutoirzation()
+        } else {
+            requestHealthAutoirzation()
+        }
         imageView.image = UIImage(named: "JJANg")
-        checkSteps()
-        getCalories()
         getwalkCount()
-        getwalkDistance()
-        
+        checkDate()
+        cals = UserDefaults.standard.double(forKey: "cals")
+        self.caloriesLabel.text = String(format: "%.2f",self.cals) + "kcal"
         Timer.scheduledTimer(timeInterval: 1.0,
-                                    target: self,
-                                    selector: #selector(checkSteps),
-                                    userInfo: nil,
-                                    repeats: true)
+                             target: self,
+                             selector: #selector(checkSteps),
+                             userInfo: nil,
+                             repeats: true)
+        
+        
+       
+        Timer.scheduledTimer(timeInterval: 30.0,
+                             target: self,
+                             selector: #selector(self.getCalories),
+                             userInfo: nil,
+                             repeats: true)
+        
+    }
+    
+    func checkDate() {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        self.dateString = dateFormatter.string(from: todayStartDates)
+        UserDefaults.standard.set(dateString, forKey: "StartDate")
+        print("\(self.todayStartDates)")
+        print("\(self.dateString)")
+    }
+    
+    func reloadWorkouts() {
+        WorkoutDataStore.loadPrancerciseWorkouts { (workouts, error) in
+            self.workouts = workouts
+        }
     }
     
     @objc private func checkSteps() {
@@ -62,26 +102,39 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         guard let todayStartDate = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: nowDate) else {
             return
         }
-        
         pedoMeter.queryPedometerData(from: todayStartDate, to: nowDate) { data, error in
             if let error {
                 print("CoreMotionService.queryPedometerData Error: \(error)")
                 return
             }
             
-            if let steps = data?.numberOfSteps {
-                var step = Double(steps.doubleValue)
-                DispatchQueue.main.async {
-                    self.coreMotion.text = String(describing: steps) + "걸음"
-                    if self.walkCounts >= step + 20.0 {
-                        self.walkCountLabel.text = String(step) + "걸음"
+            let offsetComps = Calendar.current.dateComponents([.year,.month,.day,.second], from: self.todayStartDates, to: Date())
+            if case let (s?) = (offsetComps.second) {
+                
+                if s > 29 {
+                    UserDefaults.standard.removeObject(forKey:  "StartDate")
+                    if self.cals != 0 {
+                        self.todayStartDates = Calendar.current.date(byAdding: .second, value: 30, to: self.todayStartDates) ?? Date()
+                        self.checkDate()
                     }
                 }
-              
-                
+            }
+            if let steps = data?.numberOfSteps {
+                let step = Double(steps.doubleValue)
+                DispatchQueue.main.async {
+                    self.reloadWorkouts()
+                    self.getwalkDistance()
+                    self.coreMotion.text = String(describing: steps) + "걸음"
+                    var activePace = Double(truncating: data?.averageActivePace ?? 0)
+                    let currentPace = Double(truncating: data?.currentPace  ?? 0 )
+          
+                    self.currentPaceLabel.text = String(format: "%0.2f",currentPace) + "pace"
+                    self.activePaceLabel.text = String(format: "%0.2f",activePace) + "pace"
+                    self.walkCountLabel.text = String(format: "%.f",step) + "걸음"
+                }
+        
             }
         }
-
     }
     //권한
     func requestHealthAutoirzation() {
@@ -91,6 +144,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
             }else {
                 if success {
                     print("권한 허락")
+                    self.authorizeHealthKit()
                 }else {
                     print("노 권한")
                 }
@@ -98,6 +152,23 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
             
         }
     }
+    
+     func authorizeHealthKit() {
+        HealthKitSetupAssistant.authorizeHealthKit { (authorized, error) in
+            guard authorized else {
+                let baseMessage = "HealthKit Authorization Failed"
+                if let error = error {
+                    print("\(baseMessage). Reason: \(error.localizedDescription)")
+                } else {
+                    print(baseMessage)
+                }
+                return
+            }
+            
+            print("HealthKit Successfully Authorized.")
+        }
+    }
+    
     
     func convertMileToKM(distance: Double) -> Double {
         var km = distance * 1.61
@@ -114,7 +185,6 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         let now = Date()
         let startDate = Calendar.current.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: .strictStartDate)
-        
         let query = HKStatisticsQuery(quantityType: walkCount, quantitySamplePredicate: predicate, options: .cumulativeSum) { (_,result, error) in
             guard let result = result, let sum = result.sumQuantity() else {
                 print("nono")
@@ -122,9 +192,8 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
             }
             DispatchQueue.main.async {
                 var counts = sum.doubleValue(for: HKUnit.count())
-                print("걸음\(counts)")
                 self.walkCounts = counts
-                self.walkCountLabel.text = String(format:"%.0f",counts) + "걸음"
+                self.walkCountLabel.text = String(format:"%.0f",self.walkData) + "걸음"
             }
         }
         healthStore.execute(query)
@@ -145,6 +214,9 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                 print("nono")
                 return
             }
+            result.mostRecentQuantity()?.doubleValue(for: HKUnit.mile())
+            print("거리환산전\(result.mostRecentQuantity()?.doubleValue(for: HKUnit.mile()))")
+            self.eachDistances =    result.mostRecentQuantity()?.doubleValue(for: HKUnit.mile()) ?? 0.0
             distances = sum.doubleValue(for: HKUnit.mile())
             DispatchQueue.main.async {
                 self.convertMileToKM(distance: distances)
@@ -154,37 +226,88 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         }
         healthStore.execute(query)
     }
-    
-    
     //칼로리
-    func getCalories(){
+    @objc private func getCalories(){
         guard let Calories = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) else {
             return
         }
-
+        
         let now = Date()
         let timezone = TimeZone.autoupdatingCurrent
-//        let secondsFromGMT = timezone.secondsFromGMT(for: now)
-//        let localizedDate = now.addingTimeInterval(TimeInterval(secondsFromGMT))
-//        print(localizedDate)
-        
+        var StartString : String = ""
+        let dateFormatter = DateFormatter()
+
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        StartString = UserDefaults.standard.string(forKey: "StartDate") ?? ""
+        startDates = dateFormatter.date(from: StartString) ?? Date()
+        print(startDates)
         let startDate = Calendar.current.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: .strictStartDate)
-        
         let query = HKStatisticsQuery(quantityType: Calories, quantitySamplePredicate: predicate, options: .cumulativeSum) { (_,result, error) in
             var cal: Double = 0
-            guard let result = result, let sum = result.sumQuantity() else {
-                print("칼로리nono")
-                return
-            }
-            cal = sum.doubleValue(for: HKUnit.kilocalorie())
-            DispatchQueue.main.async {
+            if #available(iOS 16.0, *) {
+                guard let result = result, let sum = result.sumQuantity() else {
+                    return
+                }
+                cal = sum.doubleValue(for: HKUnit.kilocalorie())
+                self.caloriesLabel.text = String(format: " %.2f",
+                                                 cal) + "kcal"
+            } else {
+                DispatchQueue.main.async {
+                    
+                    let interval = PrancerciseWorkoutInterval(start: self.startDates,
+                                                              end: now)
+                    self.intervals.append(interval)
+       
+                    var completeWorkout: PrancerciseWorkout? {
+                        
+                        return PrancerciseWorkout(with: self.intervals)
+                    }
+                    
+                    guard let currentWorkout = completeWorkout else {
+                        
+                        return print(error?.localizedDescription as Any)
+                    }
+                    WorkoutDataStore.save(prancerciseWorkout: currentWorkout) { (success, error) in
+                        if success {
+                            self.sessions.clear()
+                        } else {
+                            self.sessions.start()
+                        }
+                    }
+                    
+                    
+                    var calData: Double = 0.0
+                    guard let energyQuantityType = HKSampleType.quantityType(
+                        forIdentifier: .activeEnergyBurned) else {
+                        fatalError("*** Energy Burned Type Not Available ***")
+                    }
+                        
+                    if self.eachDistance != 0.0 {
+                        let samples: [HKSample] = currentWorkout.intervals.map { interval in
+                            var calorieQuantity = HKQuantity(unit: .kilocalorie(),
+                                                             doubleValue: interval.totalEnergyBurned)
+                            calData += interval.totalEnergyBurned
+                            self.calories = calData
+                            self.cals +=  interval.totalEnergyBurned
+                            UserDefaults.standard.set(self.cals, forKey: "cals")
+                     
+                            self.caloriesLabel.text = String(format: "%.2f",self.cals) + "kcal"
+                            return HKCumulativeQuantitySample(type: energyQuantityType,
+                                                              quantity: calorieQuantity,
+                                                              start: interval.start,
+                                                              end: interval.end)
+                        }
+                    }else {
+                        print("너 운동안했지")
+                    }
                 
-                self.caloriesLabel.text = String(cal) + "kcal"
-                print("칼로리\(cal)")
-                print("칼로리\(TimeZone.current.identifier)")
-                print("칼로리\(startDate)")
-                print("칼로리\(predicate)")
+                
+                    
+                   
+                }
+                
+                
                 
             }
         }
@@ -223,21 +346,21 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         } catch let error as NSError {
             print("audioSession 설정 오류 : \(error.localizedDescription)")
         }
-       
+        
         let soundName = "audioTest"
-           // forResource: 파일 이름(확장자 제외) , withExtension: 확장자(mp3, wav 등) 입력
-           guard let url = Bundle.main.url(forResource: soundName, withExtension: "mp3") else {
-               print("파일이 없다")
-               return
-           }
-           
-           do {
-               player = try AVAudioPlayer(contentsOf: url, fileTypeHint: AVFileType.mp3.rawValue)
-               player.numberOfLoops = -1
-               player.play()
-           } catch let error {
-               print(error.localizedDescription)
-           }
+        // forResource: 파일 이름(확장자 제외) , withExtension: 확장자(mp3, wav 등) 입력
+        guard let url = Bundle.main.url(forResource: soundName, withExtension: "mp3") else {
+            print("파일이 없다")
+            return
+        }
+        
+        do {
+            player = try AVAudioPlayer(contentsOf: url, fileTypeHint: AVFileType.mp3.rawValue)
+            player.numberOfLoops = -1
+            player.play()
+        } catch let error {
+            print(error.localizedDescription)
+        }
         
         
         self.remoteCommandCenterSetting()
@@ -296,12 +419,11 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
     @IBAction func touchUpVideoButton(_ sender: UIButton) {
         // VideoViewController를 modal로 present 합니다.
         self.player.pause()
-       
+        
         imageView.image = UIImage(named: "Key")
     }
     
-    
-    
+   
     @IBAction func handleVolumeSlider(_ sender: Any) {
     imageView.alpha = CGFloat(volumeSlider.value)
             MPVolumeView.setVolume(volumeSlider.value)
@@ -313,13 +435,9 @@ extension MPVolumeView {
     static func setVolume(_ volume: Float) {
         let volumeView = MPVolumeView()
         let slider = volumeView.subviews.first(where: { $0 is UISlider }) as? UISlider
-
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.01) {
             slider?.value = volume
         }
     }
 }
-
-
-
 

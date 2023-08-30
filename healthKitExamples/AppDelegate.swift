@@ -31,6 +31,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 
-
+    func volumeDidChange(notification: NSNotification) {
+       let volume = notification.userInfo!["AVSystemController_AudioVolumeNotificationParameter"] as! Float
+            
+       // Volume at your service
+     }
 }
 
