@@ -46,7 +46,10 @@ struct PrancerciseWorkoutInterval {
   var totalEnergyBurned: Double {
     let prancerciseCaloriesPerHour: Double = 450
     let hours: Double = duration/3600
+    print("칼로리데이터시간\(duration)")
+      print("칼로리데이터시\(hours)")
     let totalCalories = prancerciseCaloriesPerHour * hours
+      print("칼로리데이터총\(totalCalories)")
     return totalCalories
   }
 }
@@ -68,7 +71,7 @@ struct PrancerciseWorkout {
       result + interval.totalEnergyBurned
         
     }
-      print("총칼로리\(totalEnergyBurned)")
+
   }
     
 

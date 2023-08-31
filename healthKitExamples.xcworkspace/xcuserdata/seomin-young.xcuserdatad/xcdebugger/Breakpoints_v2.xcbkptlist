@@ -14,28 +14,13 @@
             filePath = "healthKitExamples/Data/Workout.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "75"
-            endingLineNumber = "75"
-            landmarkName = "PrancerciseWorkout"
-            landmarkType = "14">
+            startingLineNumber = "78"
+            endingLineNumber = "78"
+            landmarkName = "duration"
+            landmarkType = "24">
             <Locations>
                <Location
-                  uuid = "9A4BFCAB-9235-412E-8067-9E6F09AFDB29 - e5bbbdb3846eeb7f"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "healthKitExamples.PrancerciseWorkout.duration.getter : Swift.Double"
-                  moduleName = "healthKitExamples"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/seomin-young/Documents/GitHub/healthKitWithAudio/healthKitExamples/Data/Workout.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "73"
-                  endingLineNumber = "73"
-                  offsetFromSymbolStart = "44">
-               </Location>
-               <Location
-                  uuid = "9A4BFCAB-9235-412E-8067-9E6F09AFDB29 - da62789cba51d434"
+                  uuid = "9A4BFCAB-9235-412E-8067-9E6F09AFDB29 - da62789cba51d4a8"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -45,12 +30,12 @@
                   urlString = "file:///Users/seomin-young/Documents/GitHub/healthKitWithAudio/healthKitExamples/Data/Workout.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "74"
-                  endingLineNumber = "74"
+                  startingLineNumber = "78"
+                  endingLineNumber = "78"
                   offsetFromSymbolStart = "136">
                </Location>
                <Location
-                  uuid = "9A4BFCAB-9235-412E-8067-9E6F09AFDB29 - e5bbbdb3846eebe3"
+                  uuid = "9A4BFCAB-9235-412E-8067-9E6F09AFDB29 - e5bbbdb3846ee840"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -60,8 +45,8 @@
                   urlString = "file:///Users/seomin-young/Documents/GitHub/healthKitWithAudio/healthKitExamples/Data/Workout.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "77"
-                  endingLineNumber = "77"
+                  startingLineNumber = "80"
+                  endingLineNumber = "80"
                   offsetFromSymbolStart = "44">
                </Location>
             </Locations>
@@ -113,85 +98,6 @@
                   offsetFromSymbolStart = "820">
                </Location>
             </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "0BB9424E-6A6F-4F2C-96FE-29D81EE4E727"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "healthKitExamples/ViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "220"
-            endingLineNumber = "220"
-            landmarkName = "getwalkDistance()"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "0BB9424E-6A6F-4F2C-96FE-29D81EE4E727 - a9fafcfcabe933de"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (__C.HKStatisticsQuery, Swift.Optional&lt;__C.HKStatistics&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in healthKitExamples.ViewController.getwalkDistance() -&gt; ()"
-                  moduleName = "healthKitExamples"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/seomin-young/Documents/GitHub/healthKitWithAudio/healthKitExamples/ViewController.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "220"
-                  endingLineNumber = "220"
-                  offsetFromSymbolStart = "1548">
-               </Location>
-               <Location
-                  uuid = "0BB9424E-6A6F-4F2C-96FE-29D81EE4E727 - 46c33be863fd3c14"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "function signature specialization &lt;Arg[1] = Value Promoted from Box&gt; of closure #1 @Swift.MainActor () -&gt; () in closure #1 (__C.HKStatisticsQuery, Swift.Optional&lt;__C.HKStatistics&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in healthKitExamples.ViewController.getwalkDistance() -&gt; ()"
-                  moduleName = "healthKitExamples"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/seomin-young/Documents/GitHub/healthKitWithAudio/healthKitExamples/ViewController.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "221"
-                  endingLineNumber = "221"
-                  offsetFromSymbolStart = "76">
-               </Location>
-               <Location
-                  uuid = "0BB9424E-6A6F-4F2C-96FE-29D81EE4E727 - a9fafcfcabe933de"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (__C.HKStatisticsQuery, Swift.Optional&lt;__C.HKStatistics&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in healthKitExamples.ViewController.getwalkDistance() -&gt; ()"
-                  moduleName = "healthKitExamples"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/seomin-young/Documents/GitHub/healthKitWithAudio/healthKitExamples/ViewController.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "220"
-                  endingLineNumber = "220"
-                  offsetFromSymbolStart = "1812">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "5EB5FF32-977B-4F22-B1B0-6CACB3D5D002"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "healthKitExamples/ViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "224"
-            endingLineNumber = "224"
-            landmarkName = "getwalkDistance()"
-            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

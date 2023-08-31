@@ -29,8 +29,8 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
     @IBOutlet weak var walkCountLabel: UILabel!
     @IBOutlet weak var calorys: UILabel!
     @IBOutlet weak var distances: UILabel!
-   
     @IBOutlet weak var walkCount: UILabel!
+    
     var player = AVAudioPlayer()
     var session = AVAudioSession()
     var sessions = WorkoutSession()
@@ -49,6 +49,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
     var eachDistances: Double = 0.0
     var intervals: [PrancerciseWorkoutInterval] = []
     var calories: Double = 0.0
+    let motionManager = CMMotionActivityManager()
     let readData = Set([HKObjectType.quantityType(forIdentifier: .heartRate)!, HKObjectType.quantityType(forIdentifier: .stepCount)!, HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)!, HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!])
     let share = Set([HKObjectType.quantityType(forIdentifier: .heartRate)!, HKObjectType.quantityType(forIdentifier: .stepCount)!, HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)!, HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!])
     
@@ -59,10 +60,14 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
             requestHealthAutoirzation()
         } else {
             requestHealthAutoirzation()
+            authorizeHealthKit()
         }
         imageView.image = UIImage(named: "JJANg")
         getwalkCount()
+        todayStartDates = Date()
         checkDate()
+
+//        UserDefaults.standard.set(0, forKey: "cals")
         cals = UserDefaults.standard.double(forKey: "cals")
         self.caloriesLabel.text = String(format: "%.2f",self.cals) + "kcal"
         Timer.scheduledTimer(timeInterval: 1.0,
@@ -70,24 +75,24 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                              selector: #selector(checkSteps),
                              userInfo: nil,
                              repeats: true)
-        
-        
-       
-        Timer.scheduledTimer(timeInterval: 30.0,
-                             target: self,
-                             selector: #selector(self.getCalories),
-                             userInfo: nil,
-                             repeats: true)
-        
+  
     }
     
     func checkDate() {
+        let offsetComps = Calendar.current.dateComponents([.year,.month,.day,.second], from: self.todayStartDates, to: Date())
+        if case let (d?,s?) = (offsetComps.day,offsetComps.second) {
+            if s > 10 {
+                todayStartDates = Date()
+            } else if d > 0 {
+                todayStartDates = Date()
+
+            }
+        }
+        print("오늘날짜\(todayStartDates)")
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         self.dateString = dateFormatter.string(from: todayStartDates)
         UserDefaults.standard.set(dateString, forKey: "StartDate")
-        print("\(self.todayStartDates)")
-        print("\(self.dateString)")
     }
     
     func reloadWorkouts() {
@@ -96,6 +101,57 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         }
     }
     
+    func motionMove() {
+        motionManager.startActivityUpdates(
+            to: OperationQueue.main,
+            withHandler: {(
+                deviceActivity: CMMotionActivity!
+            ) -> Void in
+                if deviceActivity.stationary {
+                    print("놀고있네")
+                }
+                else if deviceActivity.walking {
+                    print("걸고잇군")
+                    self.sessions.start()
+                    self.getCalories()
+                }
+                else if deviceActivity.running {
+                    print("뛴다")
+                    self.getCalories()
+                }
+            }
+        )
+        
+        
+    }
+    
+    func updateDate() {
+        let offsetComps = Calendar.current.dateComponents([.year,.month,.day,.second], from: self.todayStartDates, to: Date())
+        if case let (d?,s?) = (offsetComps.day,offsetComps.second) {
+            
+            if s > 1 {
+                print("여기오셧나요\(offsetComps)")
+                UserDefaults.standard.removeObject(forKey:  "StartDate")
+                self.todayStartDates = Calendar.current.date(byAdding: .second, value: 1, to: self.todayStartDates) ?? Date()
+                print("여기오셧나요\(todayStartDates)")
+                self.checkDate()
+            }   else if d > 0 {
+                self.cals = 0
+                print("여기다테스트")
+                UserDefaults.standard.removeObject(forKey:  "cals")
+                self.caloriesLabel.text = "0kcal"
+                
+                UserDefaults.standard.removeObject(forKey:  "StartDate")
+                self.todayStartDates = Calendar.current.date(byAdding: .second, value: 1, to: self.todayStartDates) ?? Date()
+                self.checkDate()
+            } else {
+                
+            }
+            
+        }
+        
+    }
+// 걸음수 
     @objc private func checkSteps() {
         
         let nowDate = Date()
@@ -107,32 +163,20 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                 print("CoreMotionService.queryPedometerData Error: \(error)")
                 return
             }
-            
-            let offsetComps = Calendar.current.dateComponents([.year,.month,.day,.second], from: self.todayStartDates, to: Date())
-            if case let (s?) = (offsetComps.second) {
-                
-                if s > 29 {
-                    UserDefaults.standard.removeObject(forKey:  "StartDate")
-                    if self.cals != 0 {
-                        self.todayStartDates = Calendar.current.date(byAdding: .second, value: 30, to: self.todayStartDates) ?? Date()
-                        self.checkDate()
-                    }
-                }
-            }
+            self.updateDate()
+            self.motionMove()
             if let steps = data?.numberOfSteps {
                 let step = Double(steps.doubleValue)
                 DispatchQueue.main.async {
-                    self.reloadWorkouts()
-                    self.getwalkDistance()
                     self.coreMotion.text = String(describing: steps) + "걸음"
                     var activePace = Double(truncating: data?.averageActivePace ?? 0)
                     let currentPace = Double(truncating: data?.currentPace  ?? 0 )
-          
+                    self.getwalkDistance()
                     self.currentPaceLabel.text = String(format: "%0.2f",currentPace) + "pace"
                     self.activePaceLabel.text = String(format: "%0.2f",activePace) + "pace"
                     self.walkCountLabel.text = String(format: "%.f",step) + "걸음"
                 }
-        
+                
             }
         }
     }
@@ -144,7 +188,10 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
             }else {
                 if success {
                     print("권한 허락")
-                    self.authorizeHealthKit()
+                    if #available(iOS 16.0, *) {
+                    }else {
+                        self.authorizeHealthKit()
+                    }
                 }else {
                     print("노 권한")
                 }
@@ -153,7 +200,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         }
     }
     
-     func authorizeHealthKit() {
+    func authorizeHealthKit() {
         HealthKitSetupAssistant.authorizeHealthKit { (authorized, error) in
             guard authorized else {
                 let baseMessage = "HealthKit Authorization Failed"
@@ -171,7 +218,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
     
     
     func convertMileToKM(distance: Double) -> Double {
-        var km = distance * 1.61
+        let km = distance * 1.61
         print("거리환산후\(km)")
         distanceLabel.text = String(format:"%.2f",km) + "km"
         return km
@@ -200,7 +247,7 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
     }
     
     // 거리
-    func getwalkDistance() {
+    @objc func getwalkDistance() {
         guard let Distance = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning) else {
             return
         }
@@ -214,13 +261,10 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                 print("nono")
                 return
             }
-            result.mostRecentQuantity()?.doubleValue(for: HKUnit.mile())
-            print("거리환산전\(result.mostRecentQuantity()?.doubleValue(for: HKUnit.mile()))")
-            self.eachDistances =    result.mostRecentQuantity()?.doubleValue(for: HKUnit.mile()) ?? 0.0
+            self.eachDistances =  result.mostRecentQuantity()?.doubleValue(for: HKUnit.mile()) ?? 0.0
             distances = sum.doubleValue(for: HKUnit.mile())
             DispatchQueue.main.async {
                 self.convertMileToKM(distance: distances)
-                print("거리환산전\(distances)")
                 
             }
         }
@@ -236,11 +280,11 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         let timezone = TimeZone.autoupdatingCurrent
         var StartString : String = ""
         let dateFormatter = DateFormatter()
-
+        
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         StartString = UserDefaults.standard.string(forKey: "StartDate") ?? ""
         startDates = dateFormatter.date(from: StartString) ?? Date()
-        print(startDates)
+  
         let startDate = Calendar.current.startOfDay(for: now)
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: .strictStartDate)
         let query = HKStatisticsQuery(quantityType: Calories, quantitySamplePredicate: predicate, options: .cumulativeSum) { (_,result, error) in
@@ -257,8 +301,14 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                     
                     let interval = PrancerciseWorkoutInterval(start: self.startDates,
                                                               end: now)
+                    
+                    
+                    print("시작\(self.startDates)")
+                    print("끝\(now)")
                     self.intervals.append(interval)
-       
+                    print("시작\(self.intervals)")
+                    print("끝\(now)")
+                    
                     var completeWorkout: PrancerciseWorkout? {
                         
                         return PrancerciseWorkout(with: self.intervals)
@@ -271,8 +321,10 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                     WorkoutDataStore.save(prancerciseWorkout: currentWorkout) { (success, error) in
                         if success {
                             self.sessions.clear()
+                            print("성공")
                         } else {
                             self.sessions.start()
+                            print("실패")
                         }
                     }
                     
@@ -282,7 +334,6 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                         forIdentifier: .activeEnergyBurned) else {
                         fatalError("*** Energy Burned Type Not Available ***")
                     }
-                        
                 
                         let samples: [HKSample] = currentWorkout.intervals.map { interval in
                             var calorieQuantity = HKQuantity(unit: .kilocalorie(),
@@ -291,16 +342,16 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
                             self.calories = calData
                             self.cals +=  interval.totalEnergyBurned
                             UserDefaults.standard.set(self.cals, forKey: "cals")
-                     
+                            print("칼로리데이터\(interval.totalEnergyBurned)")
                             self.caloriesLabel.text = String(format: "%.2f",self.cals) + "kcal"
                             return HKCumulativeQuantitySample(type: energyQuantityType,
                                                               quantity: calorieQuantity,
                                                               start: interval.start,
                                                               end: interval.end)
                         }
-                   
+                    self.sessions.clear()
                     
-                   
+                    self.intervals.removeAll()
                 }
                 
                 
@@ -419,11 +470,11 @@ class ViewController: UIViewController ,AVAudioPlayerDelegate{
         imageView.image = UIImage(named: "Key")
     }
     
-   
+    
     @IBAction func handleVolumeSlider(_ sender: Any) {
-    imageView.alpha = CGFloat(volumeSlider.value)
-            MPVolumeView.setVolume(volumeSlider.value)
-        }
+        imageView.alpha = CGFloat(volumeSlider.value)
+        MPVolumeView.setVolume(volumeSlider.value)
+    }
     
 }
 
